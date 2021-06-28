@@ -118,21 +118,22 @@
 
     .NOTES
         Author: Scott Crawford
-        Reviewer: Rich Kusak
+        R
+        eviewer: Rich Kusak
         Created: 2017-10-22
 
     TODO: Add support for GENERIC access rights
     https://docs.microsoft.com/en-us/windows/win32/secauthz/access-mask-format
     https://docs.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights?redirectedfrom=MSDN
+    https://rohnspowershellblog.wordpress.com/2015/01/16/what-does-the-synchronize-file-system-right-mean/
 #>
 
 function New-NtfsAce {
-
     [CmdletBinding()]
     param (
         [Parameter(ValueFromPipelineByPropertyName)]
-        [System.Security.AccessControl.AccessControlType]$AccessControlType = 'Allow',
-
+        [System.Security.AccessControl.AccessControlType]$AccessControlType = 'Allow'
+        ,
         # The double tanslation ensures a valid identity in a 'pretty' format.
         [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateScript( {
@@ -140,11 +141,11 @@ function New-NtfsAce {
                     if ($script:IdentityReference = $_.Translate([System.Security.Principal.SecurityIdentifier]).Translate([System.Security.Principal.NTAccount])) {$true}
                 } catch {throw 'Failure: Invalid identity reference. Specify a built-in, local, or domain identity. Valid domain account formats are: DOMAIN\Username or Username@Domain.'}
             })]
-        [System.Security.Principal.NTAccount]$Identity,
-
+        [System.Security.Principal.NTAccount]$Identity
+        ,
         [Parameter(ValueFromPipelineByPropertyName)]
-        [System.Security.AccessControl.FileSystemRights[]]$Rights,
-
+        [System.Security.AccessControl.FileSystemRights[]]$Rights
+        ,
         [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateSet(
             'This_folder_only',
@@ -154,8 +155,8 @@ function New-NtfsAce {
             'Files_only',
             'This_folder_subfolders_and_files',
             'Subfolders_and_files_only')]
-        [string]$ApplyTo = 'This_folder_subfolders_and_files',
-
+        [string]$ApplyTo = 'This_folder_subfolders_and_files'
+        ,
         [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateSet(0, 1)]
         [int]$ThisContainerOnly = 0
@@ -205,7 +206,7 @@ function New-NtfsAce {
             Write-Output $ace
 
         } catch {
-            Write-Error -ErrorRecord $Error[0]
+            throw $_
         }
     }
 }
