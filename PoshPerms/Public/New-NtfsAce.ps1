@@ -12,6 +12,12 @@
         This function also presents the System.Security.AccessControl.FileSystemRights enumeration to allow
         granular permissions to be selected.
 
+    .PARAMETER Audit
+        Create an audit ACE for the SACL
+
+    .PARAMETER AuditFlags
+        Specifies which actions to audit - Success or Failure
+
     .PARAMETER AccessControlType
         Specifies whether to create an Allow or Deny ACE
 
@@ -118,8 +124,7 @@
 
     .NOTES
         Author: Scott Crawford
-        R
-        eviewer: Rich Kusak
+        Reviewer: Rich Kusak
         Created: 2017-10-22
 
     TODO: Add support for GENERIC access rights
@@ -129,13 +134,19 @@
 #>
 
 function New-NtfsAce {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Dacl')]
     param (
-        [Parameter(ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Sacl', Mandatory, ValueFromPipelineByPropertyName)]
+        [switch]$Audit
+        ,
+        [Parameter(ParameterSetName = 'Sacl', ValueFromPipelineByPropertyName)]
+        [System.Security.AccessControl.AuditFlags]$AuditFlags
+        ,
+        [Parameter(ParameterSetName = 'Dacl', ValueFromPipelineByPropertyName)]
         [System.Security.AccessControl.AccessControlType]$AccessControlType = 'Allow'
         ,
         # The double tanslation ensures a valid identity in a 'pretty' format.
-        [Parameter(ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [ValidateScript( {
                 try {
                     if ($script:IdentityReference = $_.Translate([System.Security.Principal.SecurityIdentifier]).Translate([System.Security.Principal.NTAccount])) {$true}
@@ -158,8 +169,7 @@ function New-NtfsAce {
         [string]$ApplyTo = 'This_folder_subfolders_and_files'
         ,
         [Parameter(ValueFromPipelineByPropertyName)]
-        [ValidateSet(0, 1)]
-        [int]$ThisContainerOnly = 0
+        [switch]$ThisContainerOnly
     )
 
     begin {
@@ -195,13 +205,23 @@ function New-NtfsAce {
             if ($ThisContainerOnly) {$PropagationFlags = $PropagationFlags -bor $const_Propagate_NoPropagateInherit}
 
             # Create a new ace
-            $ace = [System.Security.AccessControl.FileSystemAccessRule]::new(
-                [System.Security.Principal.IdentityReference    ]$IdentityReference,
-                [System.Security.AccessControl.FileSystemRights ]$FileSystemRights,
-                [System.Security.AccessControl.InheritanceFlags ]$InheritanceFlags,
-                [System.Security.AccessControl.PropagationFlags ]$PropagationFlags,
-                [System.Security.AccessControl.AccessControlType]$AccessControlType
-            )
+            if ($Audit) {
+                $ace = [System.Security.AccessControl.FileSystemAuditRule]::new(
+                    [System.Security.Principal.IdentityReference    ]$IdentityReference,
+                    [System.Security.AccessControl.FileSystemRights ]$FileSystemRights,
+                    [System.Security.AccessControl.InheritanceFlags ]$InheritanceFlags,
+                    [System.Security.AccessControl.PropagationFlags ]$PropagationFlags,
+                    [System.Security.AccessControl.AuditFlags       ]$AuditFlags
+                )
+            }else{
+                $ace = [System.Security.AccessControl.FileSystemAccessRule]::new(
+                    [System.Security.Principal.IdentityReference    ]$IdentityReference,
+                    [System.Security.AccessControl.FileSystemRights ]$FileSystemRights,
+                    [System.Security.AccessControl.InheritanceFlags ]$InheritanceFlags,
+                    [System.Security.AccessControl.PropagationFlags ]$PropagationFlags,
+                    [System.Security.AccessControl.AccessControlType]$AccessControlType
+                )
+            }
 
             Write-Output $ace
 
