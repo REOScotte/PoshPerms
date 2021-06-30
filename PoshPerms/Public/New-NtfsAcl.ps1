@@ -93,7 +93,7 @@ function New-NtfsAcl {
         # Set the primary group associated with the ACL
         if ($Group) {
             $acl.SetGroup($Group)
-        } else {
+        } elseif ($Owner) {
             $acl.SetGroup($Owner)
         }
     
