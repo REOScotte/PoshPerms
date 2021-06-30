@@ -149,8 +149,8 @@ function New-NtfsAce {
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [ValidateScript( {
                 try {
-                    if ($script:IdentityReference = $_.Translate([System.Security.Principal.SecurityIdentifier]).Translate([System.Security.Principal.NTAccount])) {$true}
-                } catch {throw 'Failure: Invalid identity reference. Specify a built-in, local, or domain identity. Valid domain account formats are: DOMAIN\Username or Username@Domain.'}
+                    if ($script:IdentityReference = $_.Translate([System.Security.Principal.SecurityIdentifier]).Translate([System.Security.Principal.NTAccount])) { $true }
+                } catch { throw 'Failure: Invalid identity reference. Specify a built-in, local, or domain identity. Valid domain account formats are: DOMAIN\Username or Username@Domain.' }
             })]
         [System.Security.Principal.NTAccount]$Identity
         ,
