@@ -15,10 +15,10 @@
         This can usually be ignored. Its for compatibility with Services for Unix or Mac. By default, it will
         be set to the same value as Owner
 
-    .PARAMETER Dacl
+    .PARAMETER Access
         A collection of ACEs to allow or deny permissions
 
-    .PARAMETER Sacl
+    .PARAMETER Audit
         A collection of ACEs to define the audit rules
 
     .PARAMETER DisableAccessRuleInheritance
@@ -41,7 +41,7 @@
         $Access1 = New-NtfsAce -AccessControlType Allow -Identity Everyone -Rights FullControl -ApplyTo Files_only
         $Audit1  = New-NtfsAce -Audit -AuditFlags Success -Identity Everyone -Rights FullControl -ApplyTo Files_only
 
-        $acl = New-NtfsAcl -Owner Scott -Dacl $Access1 -Sacl $Audit1 -DisableAccessRuleInheritance
+        $acl = New-NtfsAcl -Owner Scott -Access $Access1 -Audit $Audit1 -DisableAccessRuleInheritance
 
         $acl | Set-Acl -Path C:\Test  
 
@@ -68,9 +68,11 @@ function New-NtfsAcl {
             })]
         [System.Security.Principal.NTAccount]$Group
         ,
-        [System.Security.AccessControl.FileSystemAccessRule[]]$Dacl
+        [Alias('Dacl')]
+        [System.Security.AccessControl.FileSystemAccessRule[]]$Access
         ,
-        [System.Security.AccessControl.FileSystemAuditRule[]]$Sacl
+        [Alias('Sacl')]
+        [System.Security.AccessControl.FileSystemAuditRule[]]$Audit
         ,
         [switch]$DisableAccessRuleInheritance
         ,
@@ -98,12 +100,12 @@ function New-NtfsAcl {
         }
     
         # Add each access ACE to the DACL
-        foreach ($ace in $Dacl) {
+        foreach ($ace in $Access) {
             $acl.AddAccessRule($ace)
         }
 
         # Add each Audit ACE to the SACL
-        foreach ($ace in $Sacl) {
+        foreach ($ace in $Audit) {
             $acl.AddAuditRule($ace)
         }
 
