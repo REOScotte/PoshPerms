@@ -106,7 +106,7 @@
         Presents the options available in the GUI Applies to field.
 
         Available options are:
-        Files_only
+        Files_only                This_file_only
         This_folder_only          This_folder_and_subfolders
         Subfolders_only           Subfolders_and_files_only
         This_folder_and_files     This_folder_subfolders_and_files
@@ -159,6 +159,7 @@ function New-NtfsAce {
         ,
         [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateSet(
+            'This_file_only',
             'This_folder_only',
             'This_folder_and_subfolders',
             'Subfolders_only',
@@ -192,6 +193,7 @@ function New-NtfsAce {
 
             # Convert the ApplyTo variable to the appropriate inheritance and propagation flags.
             switch ($ApplyTo) {
+                'This_file_only'                   {$InheritanceFlags = $const_Inherit_None                                              ; $PropagationFlags = $const_Propagate_None       ; break}
                 'This_folder_only'                 {$InheritanceFlags = $const_Inherit_None                                              ; $PropagationFlags = $const_Propagate_None       ; break}
                 'This_folder_and_subfolders'       {$InheritanceFlags = $const_Inherit_ContainerInherit                                  ; $PropagationFlags = $const_Propagate_None       ; break}
                 'Subfolders_only'                  {$InheritanceFlags = $const_Inherit_ContainerInherit                                  ; $PropagationFlags = $const_Propagate_InheritOnly; break}
