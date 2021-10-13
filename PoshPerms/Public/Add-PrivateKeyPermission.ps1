@@ -42,7 +42,7 @@ Created: 2021-10-07
 #>
 
 function Add-PrivateKeyPermission {
-    [CmdletBinding(DefaultParameterSetName = 'Local', PositionalBinding = $false)]
+    [CmdletBinding(DefaultParameterSetName = 'Local', PositionalBinding = $false, SupportsShouldProcess)]
     param (
         [Parameter(ParameterSetName = 'Session', Mandatory, ValueFromPipeline)]
         [System.Management.Automation.Runspaces.PSSession[]]$Session
@@ -77,20 +77,20 @@ function Add-PrivateKeyPermission {
 
                 # Find the private key in the file system
                 $fileName = $rsaCert.key.UniqueName | Split-Path -Leaf
-                $paths = Get-ChildItem "$env:ALLUSERSPROFILE\Microsoft\Crypto\$fileName" -Recurse
+                $path = Get-ChildItem "$env:ALLUSERSPROFILE\Microsoft\Crypto\$fileName" -Recurse
 
-                if ($paths.Count -gt 1) {
+                if ($path.Count -gt 1) {
                     throw 'Multiple private keys exist with the same UniqueName.'
-                } elseif ($paths.Count -lt 1) {
+                } elseif ($path.Count -lt 1) {
                     throw 'Unable to find the matching private key.'
                 } else {
                     $acl = Get-Acl -Path $path
-                    $ace = New-NtfsAce -AccessControlType Allow -Identity $Identity -Rights $Permission -ApplyTo This_file_only
+                    $ace = New-Object System.Security.AccessControl.FileSystemAccessRule("$Identity", "$Permission", 'None', 'None', 'Allow')
                     $acl.AddAccessRule($ace)
                     Set-Acl -Path $path -AclObject $acl
                 }
             } else {
-                Write-Warning "Certificate with thumbprint: $Thumbprint does not exist at $CertStoreLocation"
+                Write-Warning "Certificate with thumbprint: $Thumbprint does not exist at $CertStoreLocation."
             }
         }
 
