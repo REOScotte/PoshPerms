@@ -31,12 +31,17 @@ The certificate store that holds the desired certificate
 The thumbprint of the desired certificate
 
 .PARAMETER Identity
-The user or group to grant permissions to
+The user or group that will be granted permission
 
 .PARAMETER Permission
 The permission that will be granted to the identity
 
 .NOTES
+This script implements the Invoke-RemoteTemplate template to allow
+running scripts locally, or remotely on computers or sessions. The
+specific functionality is primarily in the Begin block's $script scriptblock.
+https://github.com/REOScotte/MiscPowerShell/blob/master/Invoke-RemoteTemplate.ps1
+
 Author: Scott Crawford
 Created: 2021-10-07
 #>
@@ -59,7 +64,7 @@ function Add-PrivateKeyPermission {
         [string]$Thumbprint
         ,
         [Parameter(Mandatory)]
-        [string]$Identity
+        [string[]]$Identity
         ,
         [ValidateSet('Read', 'FullControl')]
         [string]$Permission = 'Read'
